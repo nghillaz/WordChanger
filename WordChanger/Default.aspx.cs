@@ -1,47 +1,79 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+using System.Net;
+using System.IO;
+using System.Collections;
+using System.Text;
 
 namespace WordChanger
 {
+    public class Word
+    {
+        public string word;
+        public ArrayList synonyms;
+    }
+
     public partial class _Default : Page
     {
-        ArrayList words = new ArrayList();
+        public ArrayList WordList;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            
+            WordList = new ArrayList();
+
+            AddWord("dude");
         }
 
         protected void Submit_Button(object sender, EventArgs e)
         {
             char[] delimiterChars = { ' ', ',', '.', ';', '\t', '"' };
-            var wordList = inputBox.Text.Split(delimiterChars);
-            Populate_Word_List(wordList);
-            PrintDat(wordList);
-        }
-        protected void Populate_Word_List(string[] wordList)
-        {
-            
-        }
-        protected void PrintDat(string[] wordList)
-        {
-            dropDownPar.InnerText = wordList[2];
-        }
-    /*    protected void Drop_Down_Maker()
-        {
-            for (int i = 0; i < words.Count; i++)
+            var userInputArray = inputBox.Text.Split(delimiterChars);
+            for (int i = 0; i < userInputArray.Length; i++)
             {
-     //           setToList(word)
+                AddWord(userInputArray[i]);
             }
         }
-    //    protected void setToList(Word word)
+
+        protected void Drop_Down_Maker()
         {
+            for (int i = 0; i < WordList.Count; i++)
+            {
+                //setToList(word);
+            }
+        }
 
-        }*/
+        void AddWord(string addWordString)
+        {
+            string apikey = File.ReadAllText(Server.MapPath("~") + "\\Resources\\api.txt", Encoding.UTF8);
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://wordsapiv1.p.mashape.com/words/" + addWordString + "/synonyms");
+            request.Method = "GET";
+            request.Headers.Add("X-Mashape-Key", apikey);
+            string jsonString = "";
+            using (WebResponse response = request.GetResponse())
+            {
+                using (Stream stream = response.GetResponseStream())
+                {
+                    StreamReader reader = new StreamReader(stream);
+                    jsonString = reader.ReadToEnd();
+                }
+            }
+            string[] formattedJson = jsonString.Split(',');
+
+            Word newWord = new Word();
+            newWord.synonyms = new ArrayList();
+
+            newWord.word = formattedJson[0].Substring(9, formattedJson[0].Length - 10);
+            newWord.synonyms.Add(formattedJson[1].Substring(13, formattedJson[1].Length - 14));
+            for (int i = 2; i < formattedJson.Length - 1; i++)
+            {
+                newWord.synonyms.Add(formattedJson[i].Substring(1, formattedJson[i].Length - 2));
+            }
+            newWord.synonyms.Add(formattedJson[formattedJson.Length - 1].Substring(1, formattedJson[formattedJson.Length - 1].Length - 4));
+
+            WordList.Add(newWord);
+        }
     }
-
 }
