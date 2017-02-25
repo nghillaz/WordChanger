@@ -21,6 +21,7 @@ namespace WordChanger
             
         }
 
+<<<<<<< HEAD
         void AddWord(string addWordString)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://wordsapiv1.p.mashape.com/words/" + addWordString + "/synonyms");
@@ -49,6 +50,11 @@ namespace WordChanger
             newWord.synonyms[formattedJson.Length - 2] = formattedJson[formattedJson.Length - 1].Substring(1, formattedJson[formattedJson.Length - 1].Length - 4);
 
             WordList.Add(newWord);
+=======
+        protected void TextBox1_TextChanged(object sender, EventArgs e)
+        {
+
+>>>>>>> ecf85a11f9902546d74fb3518ca302ce34c3d5cc
         }
     }
 }
