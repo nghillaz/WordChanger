@@ -16,15 +16,26 @@
                 </h2>
             </div>
             <p>
-                put input box here
+                 <asp:TextBox ID="inputBox" 
+                   
+                    MaxLength ="10" Wrap ="true"
+                    runat="server" 
+                    Height="300px" Width="200
+                     px" 
+                    BorderStyle="Ridge" 
+                    TextMode="MultiLine" 
+                    BorderColor="Black" Font-Size="24pt" 
+                    EnableViewState="False" ToolTip="putchyowords here"></asp:TextBox>
             </p>
+            <asp:Button ID="submitButton" runat="server" Text="Submit" OnClick="Submit_Button" />
         </div>
         <div class="col-md-5">
             <h2>
                 <asp:Label ID="outputLb" runat="server" Text="Output Text"></asp:Label>
             </h2>
             <p>
-                put output box here
+                <p id="dropDownPar" runat = "server" >
+           </p>
             </p>
         </div>
         <div class="col-md-2">
