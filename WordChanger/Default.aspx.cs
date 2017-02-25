@@ -3,6 +3,7 @@ using System.Web.UI;
 using System.Net;
 using System.IO;
 using System.Collections;
+using System.Text;
 
 namespace WordChanger
 {
@@ -18,14 +19,16 @@ namespace WordChanger
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            
+            AddWord("dude");
         }
 
         void AddWord(string addWordString)
         {
+            string apikey = File.ReadAllText(Server.MapPath("~") + "\\Resources\\api.txt", Encoding.UTF8);
+
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://wordsapiv1.p.mashape.com/words/" + addWordString + "/synonyms");
             request.Method = "GET";
-            request.Headers.Add("X-Mashape-Key", "ZkjLwuPJ5tmshpTGXkwqIwe4F8bEp1UjUdDjsn6C4XGPIWxytS");
+            request.Headers.Add("X-Mashape-Key", apikey);
             string jsonString = "";
             using (WebResponse response = request.GetResponse())
             {
