@@ -69,7 +69,7 @@ namespace WordChanger
 
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            masterBody.Attributes.Add("style", "background-color: #d9f3e0");
         }
 
         protected void Unnamed_LoggingOut(object sender, LoginCancelEventArgs e)

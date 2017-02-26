@@ -41,18 +41,26 @@ namespace WordChanger
                 NonoListHashTable = new Hashtable();
         }
 
+        protected void Reset_Session(object sender, EventArgs e)
+        {
+            Session["WordList"] = null;
+        }
+
         protected void Longest_Button(object sender, EventArgs e)
         {
             for(int i = 0; i < WordList.Count; i++)
             {
                 int largestIndex = -1;
-                int largestSize = ((Word)WordList[i]).word.Length;
-                for(int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
+                if (!(((Word)WordList[i]).synonyms == null) && !(((Word)WordList[i]).synonyms.Count == 0))
                 {
-                    if(((string)((Word)WordList[i]).synonyms[j]).Length > largestSize)
+                    int largestSize = ((Word)WordList[i]).word.Length;
+                    for (int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
                     {
-                        largestSize = ((string)((Word)WordList[i]).synonyms[j]).Length;
-                        largestIndex = j;
+                        if (((string)((Word)WordList[i]).synonyms[j]).Length > largestSize)
+                        {
+                            largestSize = ((string)((Word)WordList[i]).synonyms[j]).Length;
+                            largestIndex = j;
+                        }
                     }
                 }
                 ((Word)WordList[i]).selectedIndex = largestIndex + 1;
@@ -66,13 +74,16 @@ namespace WordChanger
             for (int i = 0; i < WordList.Count; i++)
             {
                 int smallestIndex = -1;
-                int smallestSize = ((Word)WordList[i]).word.Length;
-                for (int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
+                if (!(((Word)WordList[i]).synonyms == null) && !(((Word)WordList[i]).synonyms.Count == 0))
                 {
-                    if (((string)((Word)WordList[i]).synonyms[j]).Length < smallestSize)
+                    int smallestSize = ((Word)WordList[i]).word.Length;
+                    for (int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
                     {
-                        smallestSize = ((string)((Word)WordList[i]).synonyms[j]).Length;
-                        smallestIndex = j;
+                        if (((string)((Word)WordList[i]).synonyms[j]).Length < smallestSize)
+                        {
+                            smallestSize = ((string)((Word)WordList[i]).synonyms[j]).Length;
+                            smallestIndex = j;
+                        }
                     }
                 }
                 ((Word)WordList[i]).selectedIndex = smallestIndex + 1;
@@ -85,9 +96,12 @@ namespace WordChanger
         {
             for(int i = 0; i < WordList.Count; i++)
             {
-                Random rand = new Random();
-                int randInt = rand.Next(((Word)WordList[i]).synonyms.Count + 1);
-                ((Word)WordList[i]).selectedIndex = randInt;
+                if (!(((Word)WordList[i]).synonyms == null) && !(((Word)WordList[i]).synonyms.Count == 0))
+                {
+                    Random rand = new Random();
+                    int randInt = rand.Next(((Word)WordList[i]).synonyms.Count + 1);
+                    ((Word)WordList[i]).selectedIndex = randInt;
+                }
                 Session["WordList"] = WordList;
                 Final_Button(null, null);
             }
@@ -140,7 +154,7 @@ namespace WordChanger
                 else
                     finalOut += ((Word)WordList[i]).synonyms[((Word)WordList[i]).selectedIndex - 1];
             }
-            outputLb.Text = finalOut;
+            FinalOutputLabel.Text = finalOut;
         }
 
         void SelectedIndexUpdate(object sender, EventArgs e)

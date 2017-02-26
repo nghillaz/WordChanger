@@ -13,15 +13,6 @@ namespace WordChanger {
     public partial class _Default {
         
         /// <summary>
-        /// title control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label title;
-        
-        /// <summary>
         /// inputLb control.
         /// </summary>
         /// <remarks>
@@ -76,24 +67,6 @@ namespace WordChanger {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl dropDownPar;
         
         /// <summary>
-        /// getFinal control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button getFinal;
-        
-        /// <summary>
-        /// settingsLb control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label settingsLb;
-        
-        /// <summary>
         /// userSelection control.
         /// </summary>
         /// <remarks>
@@ -137,5 +110,23 @@ namespace WordChanger {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button Reset;
+        
+        /// <summary>
+        /// Final control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label Final;
+        
+        /// <summary>
+        /// FinalOutputLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox FinalOutputLabel;
     }
 }
