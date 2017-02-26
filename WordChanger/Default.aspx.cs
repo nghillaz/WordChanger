@@ -22,19 +22,39 @@ namespace WordChanger
         public ArrayList WordList;
         public Hashtable WordHashTable;
         public Hashtable NonoListHashTable;
+        public ArrayList WordControls;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (WordList == null || WordList.Count == 0)
                 WordList = new ArrayList();
-            if (WordHashTable == null || WordHashTable.Count == 0)
-                WordHashTable = new Hashtable();
+            if (WordHashTable == null || WordHashTable.Count == 0) {
+                if (Session["WordHashTable"] == null)
+                    WordHashTable = new Hashtable();
+                else
+                    WordHashTable = (Hashtable)Session["WordHashTable"];
+            }                 
             if (NonoListHashTable == null || NonoListHashTable.Count == 0)
                 NonoListHashTable = new Hashtable();
+            if (WordControls == null || WordControls.Count == 0)
+            {
+                if (Session["WordControls"] == null)
+                    WordControls = new ArrayList();
+                else
+                    WordControls = (ArrayList)Session["WordControls"];
+            }
+        }
+
+        public void SaveSession()
+        {
+            Session["WordHashTable"] = WordHashTable;
+            Session["WordControls"] = WordControls;
         }
 
         protected void Submit_Button(object sender, EventArgs e)
         {
+            SaveSession();
+
             string inputText = inputBox.Text;
             ArrayList parsedText = new ArrayList();
             String sub = "";
@@ -60,6 +80,8 @@ namespace WordChanger
                 i++;
             }
 
+            //make sure the word list is clear before adding new text
+            WordList.Clear();
             for (i = 0; i < parsedText.Count; i++)
             {
                 AddWord((string)parsedText[i]);
@@ -69,24 +91,22 @@ namespace WordChanger
         //Finds the values of the drop down lists and compiles them into the final text box. 
         protected void Final_Button(object sender, EventArgs e)
         {
+            SaveSession();
+
             String finalOut = "";
-              for (int i = 0; i < dropDownPanel.Controls.Count; i++)
+            for (int i = 0; i < WordControls.Count; i++)
             {
-                if (dropDownPanel.Controls[i] is DropDownList)
+                if (WordControls[i] is DropDownList)
                 {
-                    finalOut += ((DropDownList)dropDownPanel.Controls[i]).SelectedValue;
+                    finalOut += ((DropDownList)WordControls[i]).SelectedValue;
                 }
-                else if (dropDownPanel.Controls[i] is Label){ 
-                    finalOut += ((Label)dropDownPanel.Controls[i]).Text;
-                }
-                else
+                else if (WordControls[i] is Label)
                 {
-                    //ignore
+                    finalOut += ((Label)WordControls[i]).Text;
                 }
-                
             }
             outputLb.Text = finalOut;
-        
+
         }
 
         protected void Drop_Down_Maker()
@@ -99,6 +119,7 @@ namespace WordChanger
                     Label lab = new Label();
                     lab.Text = ((Word)WordList[i]).word;
                     dropDownPanel.Controls.Add(lab);
+                    WordControls.Add(lab);
                 }
                 else {
                     DropDownList ddl = new DropDownList();
@@ -112,17 +133,30 @@ namespace WordChanger
                         ddl.Items.Add(dropdownItem);
                     }
                     dropDownPanel.Controls.Add(ddl);
+                    WordControls.Add(ddl);
                 }
             }
         }
 
         void AddWord(string addWordString)
         {
+            //if the word is one character long, it's not synonymable word
+            if(addWordString.Length < 2)
+            {
+                Word newWord = new Word();
+                newWord.word = addWordString;
+                newWord.synonyms = new ArrayList();
+                newWord.synonyms.Clear();
+                WordList.Add(newWord);
+                return;
+            }
             //if the word is on the nonolist, add a placeholder word with no synonyms
             if (IsInNonoList(addWordString))
             {
                 Word newWord = new Word();
                 newWord.word = addWordString;
+                newWord.synonyms = new ArrayList();
+                newWord.synonyms.Clear();
                 WordList.Add(newWord);
                 return;
             }
@@ -131,6 +165,7 @@ namespace WordChanger
             if (WordHashTable.Contains(addWordString))
             {
                 WordList.Add(WordHashTable[addWordString]);
+                return;
             }
             //the word hasn't been searched
             else
@@ -169,17 +204,25 @@ namespace WordChanger
                         return;
                     }
                     else
-                        //first synonym
+                    //first synonym
+                    //if there is only one synonym, we have to parse this slightly differently
+                    if(formattedJson.Length > 2)
                         newWord.synonyms.Add(formattedJson[1].Substring(13, formattedJson[1].Length - 14));
+                    else
+                        newWord.synonyms.Add(formattedJson[1].Substring(13, formattedJson[1].Length - 16));
                     for (int i = 2; i < formattedJson.Length - 1; i++)
                     {
                         newWord.synonyms.Add(formattedJson[i].Substring(1, formattedJson[i].Length - 2));
                     }
-                    newWord.synonyms.Add(formattedJson[formattedJson.Length - 1].Substring(1, formattedJson[formattedJson.Length - 1].Length - 4));
+                    //if there was only one synonym, finish here
+                    //if there was more than one synonym, take care of the last trailing synonym
+                    if(formattedJson.Length > 2)
+                        newWord.synonyms.Add(formattedJson[formattedJson.Length - 1].Substring(1, formattedJson[formattedJson.Length - 1].Length - 4));
 
                     //add new word to hashtable in order to speed up lookup time in the future
                     WordHashTable.Add(addWordString, newWord);
                     WordList.Add(newWord);
+                    return;
                 }
                 catch (WebException)
                 {
