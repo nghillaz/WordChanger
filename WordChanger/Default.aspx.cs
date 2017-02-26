@@ -33,13 +33,32 @@ namespace WordChanger
                 else {
                     WordList = (ArrayList)Session["WordList"];
                     Drop_Down_Maker();
-                    Session["WordList"] = null;
                 }
             }
             if (WordHashTable == null || WordHashTable.Count == 0)
                 WordHashTable = new Hashtable();
             if (NonoListHashTable == null || NonoListHashTable.Count == 0)
                 NonoListHashTable = new Hashtable();
+        }
+
+        protected void Longest_Button(object sender, EventArgs e)
+        {
+            for(int i = 0; i < WordList.Count; i++)
+            {
+                int largestIndex = -1;
+                int largestSize = ((Word)WordList[i]).word.Length;
+                for(int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
+                {
+                    if(((string)((Word)WordList[i]).synonyms[j]).Length > largestSize)
+                    {
+                        largestSize = ((string)((Word)WordList[i]).synonyms[j]).Length;
+                        largestIndex = j;
+                    }
+                }
+                ((Word)WordList[i]).selectedIndex = largestIndex + 1;
+                Session["WordList"] = WordList;
+                Final_Button(null, null);
+            }
         }
 
         protected void Submit_Button(object sender, EventArgs e)
@@ -70,6 +89,7 @@ namespace WordChanger
 
             //make sure the word list is clear before adding new text
             WordList.Clear();
+            Session["WordList"] = null;
             for (i = 0; i < parsedText.Count; i++)
             {
                 AddWord((string)parsedText[i]);
@@ -115,7 +135,6 @@ namespace WordChanger
                     ddl.Attributes["runat"] = "server";
                     ddl.ID = "" + i;
                     ddl.Attributes["AutoPostBack"] = "true";
-                    ddl.SelectedIndexChanged += SelectedIndexUpdate;
                     ddl.Items.Add(((Word)WordList[i]).word);
                     ddl.BorderStyle = BorderStyle.None;
                     for (int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
@@ -125,6 +144,9 @@ namespace WordChanger
                         dropdownItem.Value = "" + j;
                         ddl.Items.Add(dropdownItem);
                     }
+                    if(((Word)WordList[i]).selectedIndex != -1)
+                        ddl.SelectedIndex = ((Word)WordList[i]).selectedIndex;
+                    ddl.SelectedIndexChanged += SelectedIndexUpdate;
                     dropDownPanel.Controls.Add(ddl);
                 }
             }
@@ -158,7 +180,10 @@ namespace WordChanger
             //add it to the word array, but skip the step of checking the api
             if (WordHashTable.Contains(addWordString))
             {
-                WordList.Add(WordHashTable[addWordString]);
+                Word newWord = new Word();
+                newWord.word = ((Word)WordHashTable[addWordString]).word;
+                newWord.synonyms = (ArrayList)((Word)WordHashTable[addWordString]).synonyms;
+                WordList.Add(newWord);
                 return;
             }
             //the word hasn't been searched
