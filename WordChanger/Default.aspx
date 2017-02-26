@@ -32,7 +32,7 @@
             <h2>
                 <asp:Label ID="outputLb" runat="server" Text="Output Text" Font-Names="Impact"></asp:Label>
             </h2>
-            <asp:Panel ID="dropDownPanel" runat="server">
+            <asp:Panel ID="dropDownPanel" runat="server" EnableViewState="true">
             </asp:Panel>
             <p>
                 <p id="dropDownPar" runat = "server" >
