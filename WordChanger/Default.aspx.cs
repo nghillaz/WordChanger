@@ -61,6 +61,26 @@ namespace WordChanger
             }
         }
 
+        protected void Smallest_Button(object sender, EventArgs e)
+        {
+            for (int i = 0; i < WordList.Count; i++)
+            {
+                int smallestIndex = -1;
+                int smallestSize = ((Word)WordList[i]).word.Length;
+                for (int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
+                {
+                    if (((string)((Word)WordList[i]).synonyms[j]).Length < smallestSize)
+                    {
+                        smallestSize = ((string)((Word)WordList[i]).synonyms[j]).Length;
+                        smallestIndex = j;
+                    }
+                }
+                ((Word)WordList[i]).selectedIndex = smallestIndex + 1;
+                Session["WordList"] = WordList;
+                Final_Button(null, null);
+            }
+        }
+
         protected void Submit_Button(object sender, EventArgs e)
         {
             string inputText = inputBox.Text;

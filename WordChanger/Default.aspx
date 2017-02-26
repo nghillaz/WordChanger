@@ -33,7 +33,6 @@
         <div class="col-md-5">
             <h2>
                 <asp:Label ID="outputLb" runat="server" Text="Output Text"></asp:Label>
-                <asp:Button ID="Button1" onclick="Longest_Button" runat="server" Text="TestLongest" />
             </h2>
             <asp:Panel ID="dropDownPanel" runat="server" EnableViewState="true">
             </asp:Panel>
