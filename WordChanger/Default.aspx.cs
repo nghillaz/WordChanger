@@ -121,7 +121,7 @@ namespace WordChanger
 
             //make sure the word list is clear before adding new text
             WordList.Clear();
-            Session["WordList"] = null;
+            Session["WordList"] = WordList;
             for (i = 0; i < parsedText.Count; i++)
             {
                 AddWord((string)parsedText[i]);
@@ -151,6 +151,7 @@ namespace WordChanger
 
         protected void Drop_Down_Maker()
         {
+            dropDownPanel.Controls.Clear();
             for (int i = 0; i < WordList.Count; i++)
             {
                 //check to see if it should even be a dropdown menu
