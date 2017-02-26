@@ -39,6 +39,7 @@
             <p>
                 <p id="dropDownPar" runat = "server" >
            </p>
+                <asp:Button ID="getFinal" runat="server" Text="Get Final" OnClick="Final_Button" />
             </p>
         </div>
         <div class="col-md-2">

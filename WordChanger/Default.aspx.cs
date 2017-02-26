@@ -42,6 +42,28 @@ namespace WordChanger
             }
             Drop_Down_Maker();
         }
+        //Finds the values of the drop down lists and compiles them into the final text box. 
+        protected void Final_Button(object sender, EventArgs e)
+        {
+            String finalOut = "";
+              for (int i = 0; i < dropDownPanel.Controls.Count; i++)
+            {
+                if (dropDownPanel.Controls[i] is DropDownList)
+                {
+                    finalOut += ((DropDownList)dropDownPanel.Controls[i]).SelectedValue;
+                }
+                else if (dropDownPanel.Controls[i] is Label){ 
+                    finalOut += ((Label)dropDownPanel.Controls[i]).Text;
+                }
+                else
+                {
+                    //ignore
+                }
+                
+            }
+            outputLb.Text = finalOut;
+        
+        }
 
         protected void Drop_Down_Maker()
         {
@@ -57,6 +79,7 @@ namespace WordChanger
                 else {
                     DropDownList ddl = new DropDownList();
                     ddl.Items.Add(((Word)WordList[i]).word);
+                    ddl.BorderStyle = BorderStyle.None;
                     for (int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
                     {
                         ListItem dropdownItem = new ListItem();
@@ -105,7 +128,7 @@ namespace WordChanger
                             jsonString = reader.ReadToEnd();
                         }
                     }
-                    Response.Close();
+          //          Response.Close();
                 }
                 catch(WebException)
                 {
