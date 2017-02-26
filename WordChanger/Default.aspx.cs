@@ -89,18 +89,30 @@ namespace WordChanger
             else
             {
                 string apikey = File.ReadAllText(Server.MapPath("~") + "\\Resources\\api.txt", Encoding.UTF8);
-
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://wordsapiv1.p.mashape.com/words/" + addWordString + "/synonyms");
-                request.Method = "GET";
-                request.Headers.Add("X-Mashape-Key", apikey);
                 string jsonString = "";
-                using (WebResponse response = request.GetResponse())
-                {
-                    using (Stream stream = response.GetResponseStream())
+
+                //exception catching for web exceptions
+                try {
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://wordsapiv1.p.mashape.com/words/" + addWordString + "/synonyms");
+                    request.Method = "GET";
+                    request.Headers.Add("X-Mashape-Key", apikey);
+                    jsonString = "";
+                    using (WebResponse response = request.GetResponse())
                     {
-                        StreamReader reader = new StreamReader(stream);
-                        jsonString = reader.ReadToEnd();
+                        using (Stream stream = response.GetResponseStream())
+                        {
+                            StreamReader reader = new StreamReader(stream);
+                            jsonString = reader.ReadToEnd();
+                        }
                     }
+                    Response.Close();
+                }
+                catch(WebException)
+                {
+                    Word exceptionWord = new Word();
+                    exceptionWord.word = addWordString;
+                    WordList.Add(exceptionWord);
+                    return;
                 }
                 string[] formattedJson = jsonString.Split(',');
 
@@ -108,7 +120,13 @@ namespace WordChanger
                 newWord.synonyms = new ArrayList();
 
                 newWord.word = formattedJson[0].Substring(9, formattedJson[0].Length - 10);
-                newWord.synonyms.Add(formattedJson[1].Substring(13, formattedJson[1].Length - 14));
+                //check to see if there are no synonyms
+                if (formattedJson[1].Substring(13, formattedJson[1].Length - 14) == "synonyms\":")
+                    //no synonyms
+                    newWord.synonyms.Clear();
+                else
+                    //first synonym
+                    newWord.synonyms.Add(formattedJson[1].Substring(13, formattedJson[1].Length - 14));
                 for (int i = 2; i < formattedJson.Length - 1; i++)
                 {
                     newWord.synonyms.Add(formattedJson[i].Substring(1, formattedJson[i].Length - 2));
