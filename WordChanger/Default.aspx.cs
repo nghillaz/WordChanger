@@ -98,7 +98,7 @@ namespace WordChanger
             {
                 if (!(((Word)WordList[i]).synonyms == null) && !(((Word)WordList[i]).synonyms.Count == 0))
                 {
-                    Random rand = new Random();
+                    Random rand = new Random(i);
                     int randInt = rand.Next(((Word)WordList[i]).synonyms.Count + 1);
                     ((Word)WordList[i]).selectedIndex = randInt;
                 }
@@ -227,6 +227,7 @@ namespace WordChanger
             {
                 Word newWord = new Word();
                 newWord.word = ((Word)WordHashTable[addWordString]).word;
+                newWord.selectedIndex = 0;
                 newWord.synonyms = (ArrayList)((Word)WordHashTable[addWordString]).synonyms;
                 WordList.Add(newWord);
                 return;
