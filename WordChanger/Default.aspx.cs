@@ -15,6 +15,7 @@ namespace WordChanger
     {
         public string word;
         public ArrayList synonyms;
+        public int selectedIndex;
     }
 
     public partial class _Default : Page
@@ -22,43 +23,30 @@ namespace WordChanger
         public ArrayList WordList;
         public Hashtable WordHashTable;
         public Hashtable NonoListHashTable;
-        public ArrayList WordControls;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (WordList == null || WordList.Count == 0)
-                WordList = new ArrayList();
-            if (WordHashTable == null || WordHashTable.Count == 0) {
-                if (Session["WordHashTable"] == null)
-                    WordHashTable = new Hashtable();
-                else
-                    WordHashTable = (Hashtable)Session["WordHashTable"];
-            }                 
+            {
+                if (Session["WordList"] == null || ((ArrayList)Session["WordList"]).Count == 0)
+                    WordList = new ArrayList();
+                else {
+                    WordList = (ArrayList)Session["WordList"];
+                    Drop_Down_Maker();
+                    Session["WordList"] = null;
+                }
+            }
+            if (WordHashTable == null || WordHashTable.Count == 0)
+                WordHashTable = new Hashtable();
             if (NonoListHashTable == null || NonoListHashTable.Count == 0)
                 NonoListHashTable = new Hashtable();
-            if (WordControls == null || WordControls.Count == 0)
-            {
-                if (Session["WordControls"] == null)
-                    WordControls = new ArrayList();
-                else
-                    WordControls = (ArrayList)Session["WordControls"];
-            }
-        }
-
-        public void SaveSession()
-        {
-            Session["WordHashTable"] = WordHashTable;
-            Session["WordControls"] = WordControls;
         }
 
         protected void Submit_Button(object sender, EventArgs e)
         {
-            SaveSession();
-
             string inputText = inputBox.Text;
             ArrayList parsedText = new ArrayList();
             String sub = "";
-
 
             int i = 0;
             while (i < inputText.Length)
@@ -86,27 +74,27 @@ namespace WordChanger
             {
                 AddWord((string)parsedText[i]);
             }
+            Session["WordList"] = WordList;
             Drop_Down_Maker();
         }
         //Finds the values of the drop down lists and compiles them into the final text box. 
         protected void Final_Button(object sender, EventArgs e)
         {
-            SaveSession();
-
-            String finalOut = "";
-            for (int i = 0; i < WordControls.Count; i++)
+            string finalOut = "";
+            for (int i = 0; i < WordList.Count; i++)
             {
-                if (WordControls[i] is DropDownList)
-                {
-                    finalOut += ((DropDownList)WordControls[i]).SelectedValue;
-                }
-                else if (WordControls[i] is Label)
-                {
-                    finalOut += ((Label)WordControls[i]).Text;
-                }
+                if (((Word)WordList[i]).selectedIndex == 0)
+                    finalOut += ((Word)WordList[i]).word;
+                else
+                    finalOut += ((Word)WordList[i]).synonyms[((Word)WordList[i]).selectedIndex - 1];
             }
             outputLb.Text = finalOut;
+        }
 
+        void SelectedIndexUpdate(object sender, EventArgs e)
+        {
+            ((Word)WordList[int.Parse(((DropDownList)sender).ID)]).selectedIndex = ((DropDownList)sender).SelectedIndex;
+            Session["WordList"] = WordList;
         }
 
         protected void Drop_Down_Maker()
@@ -117,12 +105,17 @@ namespace WordChanger
                 if (((Word)WordList[i]).synonyms == null || ((Word)WordList[i]).synonyms.Count == 0)
                 {
                     Label lab = new Label();
+                    lab.ID = "" + i;
                     lab.Text = ((Word)WordList[i]).word;
+                    lab.Attributes["runat"] = "server";
                     dropDownPanel.Controls.Add(lab);
-                    WordControls.Add(lab);
                 }
                 else {
                     DropDownList ddl = new DropDownList();
+                    ddl.Attributes["runat"] = "server";
+                    ddl.ID = "" + i;
+                    ddl.Attributes["AutoPostBack"] = "true";
+                    ddl.SelectedIndexChanged += SelectedIndexUpdate;
                     ddl.Items.Add(((Word)WordList[i]).word);
                     ddl.BorderStyle = BorderStyle.None;
                     for (int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
@@ -133,7 +126,6 @@ namespace WordChanger
                         ddl.Items.Add(dropdownItem);
                     }
                     dropDownPanel.Controls.Add(ddl);
-                    WordControls.Add(ddl);
                 }
             }
         }
@@ -145,6 +137,7 @@ namespace WordChanger
             {
                 Word newWord = new Word();
                 newWord.word = addWordString;
+                newWord.selectedIndex = 0;
                 newWord.synonyms = new ArrayList();
                 newWord.synonyms.Clear();
                 WordList.Add(newWord);
@@ -155,6 +148,7 @@ namespace WordChanger
             {
                 Word newWord = new Word();
                 newWord.word = addWordString;
+                newWord.selectedIndex = 0;
                 newWord.synonyms = new ArrayList();
                 newWord.synonyms.Clear();
                 WordList.Add(newWord);
@@ -192,7 +186,7 @@ namespace WordChanger
 
                     Word newWord = new Word();
                     newWord.synonyms = new ArrayList();
-
+                    newWord.selectedIndex = 0;
                     newWord.word = formattedJson[0].Substring(9, formattedJson[0].Length - 10);
                     //check to see if there are no synonyms
                     if (formattedJson[1].Substring(13, formattedJson[1].Length - 14) == "")
@@ -227,6 +221,7 @@ namespace WordChanger
                 catch (WebException)
                 {
                     Word exceptionWord = new Word();
+                    exceptionWord.selectedIndex = 0;
                     exceptionWord.word = addWordString;
                     WordHashTable.Add(addWordString, exceptionWord);
                     WordList.Add(exceptionWord);
