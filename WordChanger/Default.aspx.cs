@@ -81,6 +81,18 @@ namespace WordChanger
             }
         }
 
+        protected void Randomize_Button(object sender, EventArgs e)
+        {
+            for(int i = 0; i < WordList.Count; i++)
+            {
+                Random rand = new Random();
+                int randInt = rand.Next(((Word)WordList[i]).synonyms.Count + 1);
+                ((Word)WordList[i]).selectedIndex = randInt;
+                Session["WordList"] = WordList;
+                Final_Button(null, null);
+            }
+        }
+
         protected void Submit_Button(object sender, EventArgs e)
         {
             string inputText = inputBox.Text;
@@ -164,8 +176,6 @@ namespace WordChanger
                         dropdownItem.Value = "" + j;
                         ddl.Items.Add(dropdownItem);
                     }
-                    if(((Word)WordList[i]).selectedIndex != -1)
-                        ddl.SelectedIndex = ((Word)WordList[i]).selectedIndex;
                     ddl.SelectedIndexChanged += SelectedIndexUpdate;
                     dropDownPanel.Controls.Add(ddl);
                 }
