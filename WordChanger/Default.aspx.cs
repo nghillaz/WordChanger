@@ -6,6 +6,7 @@ using System.Net;
 using System.IO;
 using System.Collections;
 using System.Text;
+using System.Web.UI.WebControls;
 
 namespace WordChanger
 {
@@ -18,12 +19,17 @@ namespace WordChanger
     public partial class _Default : Page
     {
         public ArrayList WordList;
+        public Hashtable WordHashTable;
+        public Hashtable NonoListHashTable;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            WordList = new ArrayList();
-
-            AddWord("dude");
+            if(WordList == null || WordList.Count == 0)
+                WordList = new ArrayList();
+            if (WordHashTable == null || WordHashTable.Count == 0)
+                WordHashTable = new Hashtable();
+            if (NonoListHashTable == null || NonoListHashTable.Count == 0)
+                NonoListHashTable = new Hashtable();
         }
 
         protected void Submit_Button(object sender, EventArgs e)
@@ -34,46 +40,98 @@ namespace WordChanger
             {
                 AddWord(userInputArray[i]);
             }
+            Drop_Down_Maker();
         }
 
         protected void Drop_Down_Maker()
         {
             for (int i = 0; i < WordList.Count; i++)
             {
-                //setToList(word);
+                //check to see if it should even be a dropdown menu
+                if (((Word)WordList[i]).synonyms == null || ((Word)WordList[i]).synonyms.Count == 0)
+                {
+                    Label lab = new Label();
+                    lab.Text = ((Word)WordList[i]).word;
+                    dropDownPanel.Controls.Add(lab);
+                }
+                else {
+                    DropDownList ddl = new DropDownList();
+                    ddl.Items.Add(((Word)WordList[i]).word);
+                    for (int j = 0; j < ((Word)WordList[i]).synonyms.Count; j++)
+                    {
+                        ListItem dropdownItem = new ListItem();
+                        dropdownItem.Text = (string)((Word)WordList[i]).synonyms[j];
+                        dropdownItem.Value = "" + j;
+                        ddl.Items.Add(dropdownItem);
+                    }
+                    dropDownPanel.Controls.Add(ddl);
+                }
             }
         }
 
         void AddWord(string addWordString)
         {
-            string apikey = File.ReadAllText(Server.MapPath("~") + "\\Resources\\api.txt", Encoding.UTF8);
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://wordsapiv1.p.mashape.com/words/" + addWordString + "/synonyms");
-            request.Method = "GET";
-            request.Headers.Add("X-Mashape-Key", apikey);
-            string jsonString = "";
-            using (WebResponse response = request.GetResponse())
+            //if the word is on the nonolist, add a placeholder word with no synonyms
+            if (IsInNonoList(addWordString))
             {
-                using (Stream stream = response.GetResponseStream())
+                Word newWord = new Word();
+                newWord.word = addWordString;
+                WordList.Add(newWord);
+                return;
+            }
+            //if the word has already been looked up on the api
+            //add it to the word array, but skip the step of checking the api
+            if (WordHashTable.Contains(addWordString))
+            {
+                WordList.Add(WordHashTable[addWordString]);
+            }
+            //the word hasn't been searched
+            else
+            {
+                string apikey = File.ReadAllText(Server.MapPath("~") + "\\Resources\\api.txt", Encoding.UTF8);
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://wordsapiv1.p.mashape.com/words/" + addWordString + "/synonyms");
+                request.Method = "GET";
+                request.Headers.Add("X-Mashape-Key", apikey);
+                string jsonString = "";
+                using (WebResponse response = request.GetResponse())
                 {
-                    StreamReader reader = new StreamReader(stream);
-                    jsonString = reader.ReadToEnd();
+                    using (Stream stream = response.GetResponseStream())
+                    {
+                        StreamReader reader = new StreamReader(stream);
+                        jsonString = reader.ReadToEnd();
+                    }
                 }
+                string[] formattedJson = jsonString.Split(',');
+
+                Word newWord = new Word();
+                newWord.synonyms = new ArrayList();
+
+                newWord.word = formattedJson[0].Substring(9, formattedJson[0].Length - 10);
+                newWord.synonyms.Add(formattedJson[1].Substring(13, formattedJson[1].Length - 14));
+                for (int i = 2; i < formattedJson.Length - 1; i++)
+                {
+                    newWord.synonyms.Add(formattedJson[i].Substring(1, formattedJson[i].Length - 2));
+                }
+                newWord.synonyms.Add(formattedJson[formattedJson.Length - 1].Substring(1, formattedJson[formattedJson.Length - 1].Length - 4));
+
+                WordList.Add(newWord);
+                //add new word to hashtable in order to speed up lookup time in the future
+                WordHashTable.Add(addWordString, newWord);
             }
-            string[] formattedJson = jsonString.Split(',');
+        }
 
-            Word newWord = new Word();
-            newWord.synonyms = new ArrayList();
-
-            newWord.word = formattedJson[0].Substring(9, formattedJson[0].Length - 10);
-            newWord.synonyms.Add(formattedJson[1].Substring(13, formattedJson[1].Length - 14));
-            for (int i = 2; i < formattedJson.Length - 1; i++)
+        bool IsInNonoList(string nonoInput)
+        {
+            if(NonoListHashTable.Count == 0)
             {
-                newWord.synonyms.Add(formattedJson[i].Substring(1, formattedJson[i].Length - 2));
+                string nonolist = File.ReadAllText(Server.MapPath("~") + "\\Resources\\nonolist.txt", Encoding.UTF8);
+                string[] nonolistArray = nonolist.Split(',');
+                for (int i = 0; i < nonolistArray.Length; i++)
+                    if(!NonoListHashTable.ContainsKey(nonolistArray[i]))
+                        NonoListHashTable.Add(nonolistArray[i], nonolistArray[i]);
             }
-            newWord.synonyms.Add(formattedJson[formattedJson.Length - 1].Substring(1, formattedJson[formattedJson.Length - 1].Length - 4));
-
-            WordList.Add(newWord);
+            return NonoListHashTable.ContainsKey(nonoInput);
         }
     }
 }
